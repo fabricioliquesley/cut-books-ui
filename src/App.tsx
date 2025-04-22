@@ -10,97 +10,47 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./components/ui/tooltip";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-const ELEMENTS = [
+type Elements = {
+  id: string;
+  isSelectable: boolean;
+  name: string;
+  children: {
+    id: string;
+    isSelectable: boolean;
+    name: string;
+    children: {
+      id: string;
+      isSelectable: boolean;
+      name: string;
+    }[];
+  }[];
+}[];
+
+type BookRange = Record<
+  string,
   {
-    id: "1",
-    isSelectable: true,
-    name: "books",
-    children: [
-      {
-        id: "2",
-        isSelectable: true,
-        name: "app",
-        children: [
-          {
-            id: "3",
-            isSelectable: true,
-            name: "layout.tsx",
-          },
-          {
-            id: "4",
-            isSelectable: true,
-            name: "page.tsx",
-          },
-        ],
-      },
-      {
-        id: "5",
-        isSelectable: true,
-        name: "components",
-        children: [
-          {
-            id: "6",
-            isSelectable: true,
-            name: "header.tsx",
-          },
-          {
-            id: "7",
-            isSelectable: true,
-            name: "footer.tsx",
-          },
-        ],
-      },
-      {
-        id: "8",
-        isSelectable: true,
-        name: "lib",
-        children: [
-          {
-            id: "9",
-            isSelectable: true,
-            name: "utils.ts",
-          },
-        ],
-      },
-      {
-        id: "12",
-        isSelectable: true,
-        name: "services",
-        children: [
-          {
-            id: "13",
-            isSelectable: true,
-            name: "utils.ts",
-          },
-          {
-            id: "14",
-            isSelectable: true,
-            name: "utils.ts",
-          },
-          {
-            id: "15",
-            isSelectable: true,
-            name: "utils.ts",
-          },
-          {
-            id: "16",
-            isSelectable: true,
-            name: "utils.ts",
-          },
-          {
-            id: "17",
-            isSelectable: true,
-            name: "utils.ts",
-          },
-        ],
-      },
-    ],
-  },
-];
+    chapterId: string;
+    range: string;
+  }[]
+>;
+
+type BookRanges = BookRange[];
+
+const FormSchema = z.object({
+  book: z.string(),
+  range: z.string(),
+});
 
 export function App() {
-  const [elements, setElements] = useState([
+  const { handleSubmit, register } = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
+  });
+
+  const [elements, setElements] = useState<Elements>([
     {
       id: "1",
       isSelectable: true,
@@ -110,6 +60,7 @@ export function App() {
   ]);
   const [isSelectedFile, setIsSelectedFile] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [bookRange, setBookRange] = useState<BookRanges>([]);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files;
@@ -126,20 +77,104 @@ export function App() {
     setIsSelectedFile(true);
   };
 
+  const onSubmit = (data: z.infer<typeof FormSchema>) => {
+    const chapterId = String(Date.now());
+
+    setElements((prev) => {
+      const newElements = JSON.parse(JSON.stringify(prev)) as Elements;
+      const newBook = {
+        id: String(Date.now()),
+        name: data.book,
+        isSelectable: true,
+      };
+      const newChapter = {
+        id: chapterId,
+        name: "Chapter_1.pdf",
+        isSelectable: true,
+      };
+
+      if (newElements[0].children.length === 0) {
+        newElements[0].children.push({
+          ...newBook,
+          children: [newChapter],
+        });
+      } else {
+        const existingBookIndex = newElements[0].children.findIndex(
+          (book) => book.name === data.book,
+        );
+
+        if (existingBookIndex === -1) {
+          newElements[0].children.push({
+            ...newBook,
+            children: [newChapter],
+          });
+        } else {
+          const book = newElements[0].children[existingBookIndex];
+          const chapterNum = book.children.length + 1;
+
+          book.children.push({
+            ...newChapter,
+            name: `Chapter_${chapterNum}.pdf`,
+          });
+        }
+      }
+
+      return newElements;
+    });
+
+    setBookRange((prev) => {
+      const newBookRanges = JSON.parse(JSON.stringify(prev)) as BookRanges;
+
+      const bookRangeIndex = newBookRanges.findIndex(
+        (bookRange) => !!bookRange[data.book],
+      );
+
+      if (newBookRanges.length === 0 || bookRangeIndex === -1) {
+        newBookRanges.push({
+          [data.book]: [
+            {
+              chapterId,
+              range: data.range,
+            },
+          ],
+        });
+      } else {
+        const bookRange = newBookRanges[bookRangeIndex];
+
+        bookRange[data.book].push({
+          chapterId,
+          range: data.range,
+        });
+      }
+
+      return newBookRanges;
+    });
+  };
+
+  const handleRemoveChapter = (id: string) => {
+    console.log("Remove element", id);
+  };
+
   if (!isSelectedFile) {
     return <DropArea onChange={handleFileChange} />;
   }
 
   return (
     <div className="grid max-w-[800px] grid-cols-4 items-center gap-8">
-      <form className="col-span-2 space-y-4">
-        <Input placeholder="Book" />
-        <Input placeholder="Range" />
+      {/* <pre className="absolute top-0 bg-neutral-600 text-white">
+        {JSON.stringify(bookRange, null, 2)}
+      </pre> */}
+      <form onSubmit={handleSubmit(onSubmit)} className="col-span-2 space-y-4">
+        <Input {...register("book")} placeholder="Book" />
+        <Input {...register("range")} placeholder="Range" />
         <Button>Add chapter</Button>
       </form>
       <div className="relative col-span-2">
         <h2 className="text-center text-2xl text-sky-600">{file?.name}</h2>
-        <BookFileTree elements={ELEMENTS} />
+        <BookFileTree
+          elements={elements}
+          onRemoveElement={handleRemoveChapter}
+        />
         <Button className="hover: absolute bottom-2 ml-[2.5%] w-[95%] bg-sky-800 text-neutral-100">
           Cut Book
         </Button>
