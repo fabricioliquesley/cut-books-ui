@@ -5,6 +5,8 @@ import { App } from "./App.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
+    <div className="flex h-screen w-full items-center justify-center bg-neutral-900 p-4">
+      <App />
+    </div>
   </StrictMode>,
 );
