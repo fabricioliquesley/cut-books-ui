@@ -1,3 +1,4 @@
+import { BookRanges } from "@/App";
 import {
   File,
   Folder,
@@ -10,14 +11,27 @@ import { Trash } from "lucide-react";
 interface BookFileTreeProps {
   className?: string;
   elements: TreeViewElement[];
+  bookRanges: BookRanges;
   onRemoveElement: (id: string, bookName: string) => void;
 }
 
 export function BookFileTree({
   className,
   elements,
+  bookRanges,
   onRemoveElement,
 }: BookFileTreeProps) {
+  function getPageInterval(bookName: string, fileId: string): string {
+    const bookIndex = bookRanges.findIndex(
+      (bookRange) => !!bookRange[bookName],
+    );
+    const chapterIndex = bookRanges[bookIndex][bookName].findIndex(
+      (chapter) => chapter.chapterId === fileId,
+    );
+
+    return bookRanges[bookIndex][bookName][chapterIndex].range;
+  }
+
   return (
     <div
       className={cn(
@@ -48,7 +62,9 @@ export function BookFileTree({
                           className="group w-full text-[18px]"
                           key={file.id}
                         >
-                          <p>{file.name}</p>
+                          <p>
+                            {file.name} [{getPageInterval(book.name, file.id)}]
+                          </p>
                           <span
                             className="ml-auto hidden text-red-400 group-hover:block"
                             onClick={() => onRemoveElement(file.id, book.name)}

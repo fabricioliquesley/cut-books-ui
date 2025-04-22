@@ -38,7 +38,7 @@ type BookRange = Record<
   }[]
 >;
 
-type BookRanges = BookRange[];
+export type BookRanges = BookRange[];
 
 const FormSchema = z.object({
   book: z.string(),
@@ -46,7 +46,9 @@ const FormSchema = z.object({
 });
 
 export function App() {
-  const { handleSubmit, register } = useForm<z.infer<typeof FormSchema>>({
+  const { handleSubmit, register, resetField, setValue } = useForm<
+    z.infer<typeof FormSchema>
+  >({
     resolver: zodResolver(FormSchema),
   });
 
@@ -149,6 +151,9 @@ export function App() {
 
       return newBookRanges;
     });
+
+    resetField("range");
+    setValue("range", data.range.split("-")[1] + "-");
   };
 
   const handleRemoveChapter = (id: string, bookName: string) => {
@@ -207,7 +212,7 @@ export function App() {
   }
 
   return (
-    <div className="grid max-w-[800px] grid-cols-4 items-center gap-8">
+    <div className="grid max-w-[840px] grid-cols-4 items-center gap-8">
       {/* <pre className="absolute top-0 bg-neutral-600 text-white">
         {JSON.stringify(bookRange, null, 2)}
       </pre> */}
@@ -220,6 +225,7 @@ export function App() {
         <h2 className="text-center text-2xl text-sky-600">{file?.name}</h2>
         <BookFileTree
           elements={elements}
+          bookRanges={bookRange}
           onRemoveElement={handleRemoveChapter}
         />
         <Button
