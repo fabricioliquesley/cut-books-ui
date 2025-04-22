@@ -10,7 +10,7 @@ import { Trash } from "lucide-react";
 interface BookFileTreeProps {
   className?: string;
   elements: TreeViewElement[];
-  onRemoveElement: (id: string) => void;
+  onRemoveElement: (id: string, bookName: string) => void;
 }
 
 export function BookFileTree({
@@ -51,7 +51,7 @@ export function BookFileTree({
                           <p>{file.name}</p>
                           <span
                             className="ml-auto hidden text-red-400 group-hover:block"
-                            onClick={() => onRemoveElement(file.id)}
+                            onClick={() => onRemoveElement(file.id, book.name)}
                           >
                             <Trash className="size-5" />
                           </span>
