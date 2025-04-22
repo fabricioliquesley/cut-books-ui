@@ -151,8 +151,55 @@ export function App() {
     });
   };
 
-  const handleRemoveChapter = (id: string) => {
-    console.log("Remove element", id);
+  const handleRemoveChapter = (id: string, bookName: string) => {
+    setElements((prev) => {
+      const filteredElement = JSON.parse(JSON.stringify(prev)) as Elements;
+
+      const bookIndex = filteredElement[0].children.findIndex(
+        (book) => book.name === bookName,
+      );
+      const chapterIndex = filteredElement[0].children[
+        bookIndex
+      ].children.findIndex((chapter) => chapter.id === id);
+
+      filteredElement[0].children[bookIndex].children.splice(chapterIndex, 1);
+
+      const bookChapterAmount =
+        filteredElement[0].children[bookIndex].children.length;
+
+      if (bookChapterAmount === 0) {
+        filteredElement[0].children.splice(bookIndex, 1);
+      }
+
+      return filteredElement;
+    });
+
+    setBookRange((prev) => {
+      const filteredBookRanges = JSON.parse(JSON.stringify(prev)) as BookRanges;
+
+      const bookRangeIndex = filteredBookRanges.findIndex(
+        (bookRange) => !!bookRange[bookName],
+      );
+
+      const bookRange = filteredBookRanges[bookRangeIndex];
+
+      const chapterIndex = bookRange[bookName].findIndex(
+        (chapter) => chapter.chapterId === id,
+      );
+
+      bookRange[bookName].splice(chapterIndex, 1);
+
+      if (bookRange[bookName].length === 0) {
+        delete bookRange[bookName];
+        filteredBookRanges.splice(bookRangeIndex, 1);
+      }
+
+      return filteredBookRanges;
+    });
+  };
+
+  const handleCutBooks = () => {
+    console.log("Send...");
   };
 
   if (!isSelectedFile) {
@@ -175,7 +222,11 @@ export function App() {
           elements={elements}
           onRemoveElement={handleRemoveChapter}
         />
-        <Button className="hover: absolute bottom-2 ml-[2.5%] w-[95%] bg-sky-800 text-neutral-100">
+        <Button
+          onClick={handleCutBooks}
+          disabled={elements[0].children.length < 1}
+          className="absolute bottom-2 ml-[2.5%] w-[95%] bg-sky-800 text-neutral-100 disabled:cursor-not-allowed"
+        >
           Cut Book
         </Button>
       </div>
