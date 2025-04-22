@@ -21,21 +21,26 @@ export function BookFileTree({ className, elements }: BookFileTreeProps) {
       )}
     >
       <Tree
-        className="bg-background overflow-hidden rounded-md p-2"
+        className="bg-background mb-[50px] overflow-hidden rounded-md p-2"
         initialExpandedItems={elements[0].children!.length > 0 ? ["1"] : [""]}
         elements={elements}
       >
-        <Folder element="books" value="1">
+        <Folder element="books" value="1" className="text-[18px]">
           {elements[0].children &&
             elements[0].children.map((book) => {
               return (
-                <Folder value={book.id} element={book.name} key={book.id}>
+                <Folder
+                  value={book.id}
+                  element={book.name}
+                  key={book.id}
+                  className="text-[18px]"
+                >
                   {book.children &&
                     book.children.map((file) => {
                       return (
                         <File
                           value={file.id}
-                          className="group w-full"
+                          className="group w-full text-[18px]"
                           key={file.id}
                         >
                           <p>{file.name}</p>
@@ -45,7 +50,7 @@ export function BookFileTree({ className, elements }: BookFileTreeProps) {
                               console.log("remove element:", file.id)
                             }
                           >
-                            <Trash className="h-3 w-3" />
+                            <Trash className="size-5" />
                           </span>
                         </File>
                       );
