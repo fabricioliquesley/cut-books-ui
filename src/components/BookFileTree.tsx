@@ -10,9 +10,14 @@ import { Trash } from "lucide-react";
 interface BookFileTreeProps {
   className?: string;
   elements: TreeViewElement[];
+  onRemoveElement: (id: string) => void;
 }
 
-export function BookFileTree({ className, elements }: BookFileTreeProps) {
+export function BookFileTree({
+  className,
+  elements,
+  onRemoveElement,
+}: BookFileTreeProps) {
   return (
     <div
       className={cn(
@@ -46,9 +51,7 @@ export function BookFileTree({ className, elements }: BookFileTreeProps) {
                           <p>{file.name}</p>
                           <span
                             className="ml-auto hidden text-red-400 group-hover:block"
-                            onClick={() =>
-                              console.log("remove element:", file.id)
-                            }
+                            onClick={() => onRemoveElement(file.id)}
                           >
                             <Trash className="size-5" />
                           </span>
