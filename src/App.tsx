@@ -13,6 +13,7 @@ import {
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { api } from "./utils/api";
 
 type Elements = {
   id: string;
@@ -203,8 +204,13 @@ export function App() {
     });
   };
 
-  const handleCutBooks = () => {
-    console.log("Send...");
+  const handleCutBooks = async () => {
+    const requestBody = {
+      fileName: file?.name,
+      booksRange: bookRange,
+    };
+
+    await api.post("cut-books", requestBody);
   };
 
   if (!isSelectedFile) {
