@@ -210,7 +210,11 @@ export function App() {
       booksRange: bookRange,
     };
 
-    await api.post("cut-books", requestBody);
+    const apiResponse = await api.post("cut-books", requestBody);
+
+    if (apiResponse.status === 201) {
+      toast.success(apiResponse.data.message);
+    }
   };
 
   if (!isSelectedFile) {
